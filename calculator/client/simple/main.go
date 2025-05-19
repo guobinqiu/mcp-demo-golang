@@ -29,7 +29,7 @@ func main() {
 	initRequest := mcp.InitializeRequest{}
 	initRequest.Params.ProtocolVersion = mcp.LATEST_PROTOCOL_VERSION
 	initRequest.Params.ClientInfo = mcp.Implementation{
-		Name:    "calculator Client",
+		Name:    "Calculator Client",
 		Version: "1.0.0",
 	}
 
