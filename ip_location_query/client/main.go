@@ -35,7 +35,7 @@ func main() {
 	initRequest := mcp.InitializeRequest{}
 	initRequest.Params.ProtocolVersion = mcp.LATEST_PROTOCOL_VERSION
 	initRequest.Params.ClientInfo = mcp.Implementation{
-		Name:    "Calculator Client",
+		Name:    "ip-location-client",
 		Version: "1.0.0",
 	}
 
