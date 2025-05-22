@@ -61,9 +61,9 @@ func main() {
 
 	// 调用工具
 	req := mcp.CallToolRequest{
-		Request: mcp.Request{
-			Method: "tools/call",
-		},
+		// Request: mcp.Request{
+		// 	Method: "tools/call",
+		// },
 	}
 	req.Params.Name = "calculate"
 	req.Params.Arguments = map[string]any{
