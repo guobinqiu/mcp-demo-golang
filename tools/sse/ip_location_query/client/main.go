@@ -17,6 +17,7 @@ func main() {
 		fmt.Println("Usage: main <COMMAND> [ARGS...]")
 		os.Exit(1)
 	}
+
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 
