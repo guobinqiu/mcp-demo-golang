@@ -113,7 +113,7 @@ func (cc *ChatClient) ProcessQuery(userInput string) (string, error) {
 
 	// 列出所有可用工具
 	availableTools := []openai.Tool{}
-	toolsResp, err := cc.mcpClient.ListTools(ctx, mcp.ListToolsRequest{})
+	toolsResp, err := cc.mcpClient.ListTools(ctx, mcp.ListToolsRequest{}) // 如多个mcpClient这里改成for循环
 	if err != nil {
 		log.Printf("Failed to list tools: %v", err)
 	}
@@ -139,6 +139,7 @@ func (cc *ChatClient) ProcessQuery(userInput string) (string, error) {
 		Content: userInput,
 	})
 
+	// 遍历每个mcpClient读取其对应的mcpServer上的工具告诉大模型
 	resp, err := cc.openaiClient.CreateChatCompletion(ctx, openai.ChatCompletionRequest{
 		Model:    cc.model,
 		Messages: cc.messages,
@@ -147,12 +148,25 @@ func (cc *ChatClient) ProcessQuery(userInput string) (string, error) {
 	if err != nil {
 		return "", err
 	}
+	fmt.Println(resp)
 
+	// OpenAI的API设计上支持一次请求返回多个候选回答（choices）默认为1
 	for _, choice := range resp.Choices {
+
+		// message.Content和message.ToolCalls二选一的关系
+		// 如果用户输入涉及需要调用工具，模型一般会返回 ToolCalls
+		// 否则直接返回 Content 作为文本回答
 		message := choice.Message
+
 		if message.Content != "" { // 若直接生成文本
 			finalText = append(finalText, message.Content)
+
 		} else if len(message.ToolCalls) > 0 { // 若调用工具
+			// 这个代码len(message.ToolCalls)永远为1
+			// 但如果一个MCP Server里注册了两个工具get_temperature和get_humidity
+			// 我问大模型: “我想调用xxx工具看一下今天的温度和湿度分别是多少?”message.ToolCalls就变2了
+			// 如果多个mcp server 一个注册get_temperature, 一个注册get_humidity
+			// 就要把ChatClient的mcpClient改成数组了 通过for循环每个mcpClient来列出所有可用工具给大模型
 			toolCallMessages := []openai.ChatCompletionMessage{}
 
 			for _, toolCall := range message.ToolCalls {
@@ -173,12 +187,17 @@ func (cc *ChatClient) ProcessQuery(userInput string) (string, error) {
 				}
 
 				// 构造 tool message
+				// 把工具返回的答案记录下来，作为后续模型推理的输入
 				toolCallMessages = append(toolCallMessages, openai.ChatCompletionMessage{
-					Role:       openai.ChatMessageRoleTool,
-					ToolCallID: toolCall.ID,
+					Role:       openai.ChatMessageRoleTool, // 说明是工具的响应
+					ToolCallID: toolCall.ID,                // 绑定之前模型说要调用的那个 tool_call.id
 					Content:    fmt.Sprintf("%s", resp.Content),
 				})
 			}
+
+			// 下面这个顺序模拟了人机对话流程
+			// 助理说：“我已经调用了这些工具（toolCalls）”
+			// 然后工具返回了结果（toolCallMessages）
 
 			// 添加 assistant tool call 信息
 			cc.messages = append(cc.messages, openai.ChatCompletionMessage{
@@ -195,6 +214,8 @@ func (cc *ChatClient) ProcessQuery(userInput string) (string, error) {
 			// fmt.Println("Sending messages to OpenAI:\n", string(b))
 
 			// 再次发送给模型
+			// 把助理声明调用了哪些工具（toolCalls）和这些工具的返回结果（toolCallMessages）一起发送给模型，
+			// 让模型基于工具的响应继续生成下一步的回复
 			nextResponse, err := cc.openaiClient.CreateChatCompletion(ctx, openai.ChatCompletionRequest{
 				Model:    cc.model,
 				Messages: cc.messages,
@@ -210,5 +231,7 @@ func (cc *ChatClient) ProcessQuery(userInput string) (string, error) {
 			}
 		}
 	}
+
+	// 把所有回答合并返回，方便下一次调用能有完整的上下文
 	return strings.Join(finalText, "\n"), nil
 }
