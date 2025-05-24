@@ -2,7 +2,7 @@ package main
 
 import (
 	"context"
-	"fmt"
+	"log"
 	"os"
 
 	_ "embed"
@@ -15,16 +15,18 @@ import (
 var content string
 
 func main() {
-	// 创建 MCP 服务器
+	// 确保日志输出到标准错误，避免破坏标准输出的 MCP JSON 通信
+	log.SetOutput(os.Stderr)
+
 	s := server.NewMCPServer(
-		"Demo",
+		"docs",
 		"1.0.0",
 		server.WithResourceCapabilities(true, true),
 		server.WithPromptCapabilities(true),
 		server.WithToolCapabilities(true),
+		server.WithLogging(),
 	)
 
-	// 创建资源
 	resource := mcp.NewResource(
 		"docs://readme",
 		"Project README",
@@ -32,28 +34,22 @@ func main() {
 		mcp.WithMIMEType("text/markdown"),
 	)
 
-	// 添加资源处理器
 	s.AddResource(resource, func(ctx context.Context, request mcp.ReadResourceRequest) ([]mcp.ResourceContents, error) {
-		dir, _ := os.Getwd()
-		fmt.Println("Current working dir:", dir)
-
-		// content, err := os.ReadFile("/Users/guobin/workspace/mcp-demo-golang/readme/server/README.md")
-		// if err != nil {
-		// 	return nil, err
-		// }
-
+		// 返回内容时，绝对不要输出非 JSON 内容
 		return []mcp.ResourceContents{
 			mcp.TextResourceContents{
 				URI:      "docs://readme",
 				MIMEType: "text/markdown",
-				//Text:     string(content),
-				Text: content,
+				Text:     content,
 			},
 		}, nil
 	})
 
-	// 启动服务器
-	if err := server.ServeStdio(s); err != nil {
-		fmt.Printf("Server error: %v\n", err)
+	// 启动 MCP 服务器，使用标准输入输出通信
+	// if err := server.ServeStdio(s); err != nil {
+	// 	log.Printf("Server error: %v", err)
+	// }
+	if err := server.ServeStdio(s); err != nil && err != context.Canceled {
+		log.Printf("Server error: %v", err)
 	}
 }

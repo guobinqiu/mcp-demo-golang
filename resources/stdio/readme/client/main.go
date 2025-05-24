@@ -27,11 +27,9 @@ func main() {
 	}
 
 	// 写入请求到stdin
-	_, err := stdin.Write([]byte(`{"jsonrpc":"2.0","id":1,"method":"resources/read","params":{"uri":"docs://readme"}}` + "\n"))
-	if err != nil {
-		fmt.Println("Error writing to stdin:", err)
-		return
-	}
+	stdin.Write([]byte(`{"jsonrpc":"2.0","id":0,"method":"initialize","params":{"protocolVersion":"2025-03-26","capabilities":{},"clientInfo":{"name":"test-client","version":"1.0"}}}` + "\n"))
+	stdin.Write([]byte(`{"jsonrpc":"2.0","id":1,"method":"resources/read","params":{"uri":"docs://readme"}}` + "\n"))
+
 	stdin.Close()
 
 	// 读取stdout中的响应
