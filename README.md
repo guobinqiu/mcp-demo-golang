@@ -79,3 +79,7 @@ cd mcp-demo-golang
 go build -o bin/docs-server resources/stdio/docs/server/main.go
 go run resources/stdio/docs/client/main.go
 ```
+
+## Python版
+
+> https://github.com/guobinqiu/mcp-demo-python
