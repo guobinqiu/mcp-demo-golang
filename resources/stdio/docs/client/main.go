@@ -8,7 +8,7 @@ import (
 
 func main() {
 	// 打开MCP服务器可执行文件
-	cmd := exec.Command("resources/stdio/docs/server/docs-server")
+	cmd := exec.Command("bin/docs-server")
 
 	// 创建管道以捕获输出和输入
 	stdout, _ := cmd.StdoutPipe()

@@ -29,7 +29,7 @@ func main() {
 
 	// 创建客户端实例，连接 MCP 服务端
 	mcpClient, err := client.NewStdioMCPClient(
-		"tools/stdio/ip_location_query/server/ip-location-server",
+		"bin/ip-location-server",
 		[]string{},
 	)
 	if err != nil {

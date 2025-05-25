@@ -14,7 +14,7 @@ ip_location_query
 
 ```
 cd mcp-demo-golang
-go build -o tools/stdio/ip_location_query/server/ip-location-server tools/stdio/ip_location_query/server/main.go
+go build -o bin/ip-location-server tools/stdio/ip_location_query/server/main.go
 go run tools/stdio/ip_location_query/client/main.go
 ```
 
@@ -22,7 +22,7 @@ ip_location_query with LLM
 
 ```
 cd mcp-demo-golang
-go build -o tools/stdio/ip_location_query/server/ip-location-server tools/stdio/ip_location_query/server/main.go
+go build -o bin/ip-location-server tools/stdio/ip_location_query/server/main.go
 go run tools/stdio/ip_location_query/llm-client/main.go
 ```
 
@@ -30,7 +30,7 @@ calculator
 
 ```
 cd mcp-demo-golang
-go build -o tools/stdio/calculator/server/calculator-server tools/stdio/calculator/server/main.go
+go build -o bin/calculator-server tools/stdio/calculator/server/main.go
 go run tools/stdio/calculator/client/main.go
 ```
 
@@ -38,7 +38,7 @@ calculator with LLM
 
 ```
 cd mcp-demo-golang
-go build -o tools/stdio/calculator/server/calculator-server tools/stdio/calculator/server/main.go
+go build -o bin/calculator-server tools/stdio/calculator/server/main.go
 go run tools/stdio/calculator/llm-client/main.go
 ```
 
@@ -62,7 +62,7 @@ go run tools/sse/ip_location_query/client/main.go (in another terminal)
 
 ```
 cd mcp-demo-golang
-go build -o prompts/stdio/ip_location_query/server/ip-location-server prompts/stdio/ip_location_query/server/main.go
+go build -o bin/ip-location-server prompts/stdio/ip_location_query/server/main.go
 go run prompts/stdio/ip_location_query/client/main.go
 ```
 
@@ -70,6 +70,6 @@ go run prompts/stdio/ip_location_query/client/main.go
 
 ```
 cd mcp-demo-golang
-go build -o resources/stdio/docs/server/docs-server resources/stdio/docs/server/main.go
+go build -o bin/docs-server resources/stdio/docs/server/main.go
 go run resources/stdio/docs/client/main.go
 ```
