@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
-	"os"
 	"time"
 
 	"github.com/mark3labs/mcp-go/client"
@@ -13,23 +12,20 @@ import (
 )
 
 func main() {
-	if len(os.Args) < 2 {
-		fmt.Println("Usage: main <COMMAND> [ARGS...]")
-		os.Exit(1)
-	}
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
 
-	// 启动 MCP 客户端
+	// 创建客户端实例，连接 MCP 服务端
 	c, err := client.NewStdioMCPClient(
-		os.Args[1],
+		"prompts/stdio/ip_location_query/server/ip-location-server",
 		[]string{},
-		os.Args[2:]...,
 	)
 	if err != nil {
 		log.Fatalf("Failed to create client: %v", err)
 	}
 	defer c.Close()
 
-	// 初始化 MCP 客户端
+	// 初始化 MCP 客户端（发送初始化请求，建立连接）
 	fmt.Println("Initializing client...")
 	initRequest := mcp.InitializeRequest{}
 	initRequest.Params.ProtocolVersion = mcp.LATEST_PROTOCOL_VERSION
@@ -37,10 +33,6 @@ func main() {
 		Name:    "ip-location-client",
 		Version: "1.0.0",
 	}
-
-	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
-	defer cancel()
-
 	initResult, err := c.Initialize(ctx, initRequest)
 	if err != nil {
 		log.Fatalf("Failed to initialize: %v", err)

@@ -24,23 +24,20 @@ type ChatClient struct {
 }
 
 func main() {
-	if len(os.Args) < 2 {
-		fmt.Println("Usage: main <COMMAND> [ARGS...]")
-		os.Exit(1)
-	}
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
 
-	// 启动 MCP 客户端
+	// 创建客户端实例，连接 MCP 服务端
 	mcpClient, err := client.NewStdioMCPClient(
-		os.Args[1],
+		"tools/stdio/ip_location_query/server/ip-location-server",
 		[]string{},
-		os.Args[2:]...,
 	)
 	if err != nil {
 		log.Fatalf("Failed to create client: %v", err)
 	}
 	defer mcpClient.Close()
 
-	// 初始化 MCP 客户端
+	// 初始化 MCP 客户端（发送初始化请求，建立连接）
 	fmt.Println("Initializing client...")
 	initRequest := mcp.InitializeRequest{}
 	initRequest.Params.ProtocolVersion = mcp.LATEST_PROTOCOL_VERSION
@@ -48,18 +45,14 @@ func main() {
 		Name:    "ip-location-client",
 		Version: "1.0.0",
 	}
-
-	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
-	defer cancel()
-
 	initResult, err := mcpClient.Initialize(ctx, initRequest)
 	if err != nil {
 		log.Fatalf("Failed to initialize: %v", err)
 	}
 	fmt.Printf("Connected to server: %s %s\n\n", initResult.ServerInfo.Name, initResult.ServerInfo.Version)
 
+	// 载入环境变量并初始化 OpenAI 客户端
 	_ = godotenv.Load()
-
 	apiKey := os.Getenv("OPENAI_API_KEY")
 	baseURL := os.Getenv("OPENAI_API_BASE")
 	model := os.Getenv("OPENAI_API_MODEL")
@@ -67,11 +60,11 @@ func main() {
 		fmt.Println("检查环境变量设置")
 		return
 	}
-
 	config := openai.DefaultConfig(apiKey)
 	config.BaseURL = baseURL
 	openaiClient := openai.NewClientWithConfig(config)
 
+	// 创建 ChatClient 实例并启动聊天循环
 	cc := &ChatClient{
 		mcpClient:    mcpClient,
 		openaiClient: openaiClient,
@@ -148,7 +141,7 @@ func (cc *ChatClient) ProcessQuery(userInput string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	fmt.Println(resp)
+	// fmt.Println(resp)
 
 	// OpenAI的API设计上支持一次请求返回多个候选回答（choices）默认为1
 	for _, choice := range resp.Choices {
@@ -173,7 +166,7 @@ func (cc *ChatClient) ProcessQuery(userInput string) (string, error) {
 				toolName := toolCall.Function.Name
 				toolArgsRaw := toolCall.Function.Arguments
 				// fmt.Println("=====toolCall.Function.Arguments:", toolArgsRaw)
-				var toolArgs map[string]interface{}
+				var toolArgs map[string]any
 				_ = json.Unmarshal([]byte(toolArgsRaw), &toolArgs)
 
 				// 调用工具
@@ -232,6 +225,6 @@ func (cc *ChatClient) ProcessQuery(userInput string) (string, error) {
 		}
 	}
 
-	// 把所有回答合并返回，方便下一次调用能有完整的上下文
+	// 把所有回答合并返回，方便下一次调用能用完整的上下文
 	return strings.Join(finalText, "\n"), nil
 }

@@ -2,9 +2,9 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"log"
-	"os"
 	"time"
 
 	"github.com/mark3labs/mcp-go/client"
@@ -13,28 +13,23 @@ import (
 )
 
 func main() {
-	if len(os.Args) < 2 {
-		fmt.Println("Usage: main <COMMAND> [ARGS...]")
-		os.Exit(1)
-	}
-
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 
 	// 创建 SSE transport
-	sseTransport, err := transport.NewSSE(os.Args[1])
+	sseTransport, err := transport.NewSSE("http://localhost:8081/sse")
 	if err != nil {
 		log.Fatalf("Failed to create SSE transport: %v", err)
 	}
 
-	// 启动 MCP 客户端
+	// 创建客户端实例，连接 MCP 服务端
 	c := client.NewClient(sseTransport)
 	if err := c.Start(ctx); err != nil {
 		log.Fatalf("Failed to start client: %v", err)
 	}
 	defer c.Close()
 
-	// 初始化 MCP 客户端
+	// 初始化 MCP 客户端（发送初始化请求，建立连接）
 	fmt.Println("Initializing client...")
 	initRequest := mcp.InitializeRequest{}
 	initRequest.Params.ProtocolVersion = mcp.LATEST_PROTOCOL_VERSION
@@ -66,11 +61,23 @@ func main() {
 	req.Params.Arguments = map[string]any{
 		"ip": "183.193.158.228",
 	}
-	resp, err := c.CallTool(ctx, req)
+	res, err := c.CallTool(ctx, req)
 	if err != nil {
 		log.Fatalf("工具调用失败: %v", err)
 	}
 
 	// 输出结果
-	fmt.Printf("返回结果: %+v\n", resp)
+	fmt.Println("工具输出结果: ")
+	printToolResult(res)
+}
+
+func printToolResult(result *mcp.CallToolResult) {
+	for _, content := range result.Content {
+		if textContent, ok := content.(mcp.TextContent); ok {
+			fmt.Println(textContent.Text)
+		} else {
+			jsonBytes, _ := json.MarshalIndent(content, "", "  ")
+			fmt.Println(string(jsonBytes))
+		}
+	}
 }
