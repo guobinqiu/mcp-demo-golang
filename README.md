@@ -1,5 +1,9 @@
 # MCP Demo Golang
 
+[第一课](https://github.com/guobinqiu/llm-chat)
+
+[第三课](https://github.com/guobinqiu/mcp-host)
+
 ## 协议类型
 
 - Tools
