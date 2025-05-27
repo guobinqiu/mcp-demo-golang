@@ -1,4 +1,4 @@
-# MCP Demo Golang
+# MCP Demo Golang [第二课]
 
 [第一课](https://github.com/guobinqiu/llm-chat)
 
