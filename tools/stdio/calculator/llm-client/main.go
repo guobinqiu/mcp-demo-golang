@@ -225,6 +225,11 @@ func (cc *ChatClient) ProcessQuery(userInput string) (string, error) {
 		}
 	}
 
-	// 把所有回答合并返回，方便下一次调用能用完整的上下文
-	return strings.Join(finalText, "\n"), nil
+	// 把助理的所有回答合并成一个字符串，方便下一次调用时使用完整的对话上下文
+	response := strings.Join(finalText, "\n")
+	cc.messages = append(cc.messages, openai.ChatCompletionMessage{
+		Role:    openai.ChatMessageRoleAssistant,
+		Content: response,
+	})
+	return response, nil
 }
