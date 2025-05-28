@@ -1,9 +1,5 @@
 # MCP Demo Golang [第二课]
 
-[第一课](https://github.com/guobinqiu/llm-chat)
-
-[第三课](https://github.com/guobinqiu/mcp-host)
-
 ## 协议类型
 
 - Tools
@@ -84,6 +80,7 @@ go build -o bin/docs-server resources/stdio/docs/server/main.go
 go run resources/stdio/docs/client/main.go
 ```
 
-## Python版
+[上一课](https://github.com/guobinqiu/llm-chat)
+[下一课](https://github.com/guobinqiu/mcp-host)
 
-> https://github.com/guobinqiu/mcp-demo-python
+[Python版](https://github.com/guobinqiu/mcp-demo-python)
