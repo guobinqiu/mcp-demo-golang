@@ -14,6 +14,8 @@
 
 ## Tools
 
+每个`Tool`可以作为一个独立的`MCP Server`，但也可以在一个`MCP Server`中包含多个`Tool`，每个`Tool`对应一个`API`
+
 ### stdio
 
 ip_location_query
