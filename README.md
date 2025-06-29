@@ -85,6 +85,7 @@ go run resources/stdio/docs/client/main.go
 ## 参考
 
 > https://modelcontextprotocol.io/quickstart/server
+
 > https://modelcontextprotocol.io/quickstart/client
 
 [上一课](https://github.com/guobinqiu/llm-chat)
